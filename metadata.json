@@ -1,6 +1,6 @@
 {
   "name": "BzOne",
-  "description": "Aplikasi manajemen burung modern & lengkap untuk pencatatan burung, kandang, perawatan, kesehatan, penangkaran, stok, dan keuangan.",
+  "description": "Aplikasi manajemen peternakan & kicau burung lengkap dengan audio masteran (lokal/YouTube), riwayat gantangan, kalkulator genetika, dan sertifikat pedigree.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

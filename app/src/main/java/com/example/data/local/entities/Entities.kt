@@ -308,3 +308,52 @@ data class NoteEntity(
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )
+
+@Entity(
+    tableName = "masteran_audio",
+    indices = [
+        Index(value = ["title"]),
+        Index(value = ["category"]),
+        Index(value = ["sourceType"])
+    ]
+)
+data class MasteranAudioEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val title: String,
+    val sourceType: String = "Lokal", // "Lokal" or "YouTube"
+    val sourceUri: String, // file URI or YouTube URL / Web URL
+    val category: String = "Tembakan", // Tembakan, Ngeroll, Isian Mewah, Terapi Suara Air, Pancingan Bunyi, Campuran
+    val targetSpecies: String = "Universal", // Universal or specific species
+    val durationText: String = "", // e.g. "03:45"
+    val notes: String = "",
+    val playCount: Int = 0,
+    val isFavorite: Boolean = false,
+    val isArchived: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(
+    tableName = "competition_records",
+    indices = [
+        Index(value = ["eventName"]),
+        Index(value = ["birdId"]),
+        Index(value = ["date"])
+    ]
+)
+data class CompetitionRecordEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val eventName: String,
+    val date: Long = System.currentTimeMillis(),
+    val location: String = "",
+    val birdId: Long? = null,
+    val birdName: String = "",
+    val ticketClass: String = "", // e.g. "Kelas Utama 24G", "Campuran Bebas"
+    val gantanganNumber: String = "", // e.g. "No. 36"
+    val rank: String = "Juara 1", // Juara 1, Juara 2, Juara 3, 10 Besar, Nominasi, Peserta
+    val reward: String = "", // e.g. "Trofi + Piagam + Rp 1.500.000"
+    val judgeNotes: String = "", // Catatan juri & performa burung
+    val certificatePhotoUri: String? = null,
+    val isArchived: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
+)
+

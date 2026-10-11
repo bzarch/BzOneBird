@@ -27,9 +27,11 @@ import kotlinx.coroutines.launch
         InventoryMovementEntity::class,
         TransactionEntity::class,
         ReminderEntity::class,
-        NoteEntity::class
+        NoteEntity::class,
+        MasteranAudioEntity::class,
+        CompetitionRecordEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class BzOneDatabase : RoomDatabase() {
@@ -49,6 +51,8 @@ abstract class BzOneDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
     abstract fun reminderDao(): ReminderDao
     abstract fun noteDao(): NoteDao
+    abstract fun masteranAudioDao(): MasteranAudioDao
+    abstract fun competitionRecordDao(): CompetitionRecordDao
 
     companion object {
         @Volatile

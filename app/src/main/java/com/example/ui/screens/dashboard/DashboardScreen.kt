@@ -43,6 +43,9 @@ fun DashboardScreen(
     onAddCare: () -> Unit,
     onAddBreeding: () -> Unit,
     onAddTransaction: () -> Unit,
+    onNavigateToMasteran: () -> Unit = {},
+    onNavigateToCompetitions: () -> Unit = {},
+    onNavigateToGenetics: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val stats by viewModel.dashboardStats.collectAsStateWithLifecycle()
@@ -160,6 +163,27 @@ fun DashboardScreen(
                             icon = Icons.Default.AccountBalanceWallet,
                             label = "+ Transaksi",
                             onClick = onAddTransaction
+                        )
+                    }
+                    item {
+                        QuickActionButton(
+                            icon = Icons.Default.MusicNote,
+                            label = "Masteran",
+                            onClick = onNavigateToMasteran
+                        )
+                    }
+                    item {
+                        QuickActionButton(
+                            icon = Icons.Default.EmojiEvents,
+                            label = "Lomba",
+                            onClick = onNavigateToCompetitions
+                        )
+                    }
+                    item {
+                        QuickActionButton(
+                            icon = Icons.Default.Biotech,
+                            label = "Genetika",
+                            onClick = onNavigateToGenetics
                         )
                     }
                 }

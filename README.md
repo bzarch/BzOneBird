@@ -78,6 +78,28 @@ Aplikasi ini bersifat **universal** untuk segala jenis burung tanpa batasan (sep
 - **Ekspor CSV:** Mengekspor data daftar burung ke format CSV untuk diolah di Microsoft Excel atau Google Sheets.
 - **Reset Data:** Tombol hapus seluruh data dengan dialog konfirmasi keamanan ganda.
 
+### 15. 🎵 Audio Masteran Burung Cerdas (Lokal & YouTube)
+- **Sumber Audio Fleksibel:** Mengambil audio langsung dari **Penyimpanan Lokal HP** (file MP3, WAV, M4A via File Picker) atau tautan **YouTube & Tautan Web Audio**.
+- **Player Terintegrasi:** Kontrol putar, jeda, lanjutkan, ulang (loop), dan bilah kemajuan playback.
+- **Pengatur Waktu Mati Otomatis (*Sleep Timer*):** Pilihan durasi pemasteran 15, 30, 45, atau 60 menit yang berhenti otomatis saat burung istirahat.
+- **Kategori & Filter:** Pengelompokan masteran (*Speed Rapat*, *Tembakan*, *Suara Terapi Gemericik Air*, *Lagu & Irama*, *Universal*).
+- **Favorit:** Tandai suara masteran terbaik untuk akses instan.
+
+### 16. 🏆 Prestasi & Riwayat Gantangan (*Competition & Trophy Log*)
+- **Rekam Jejak Lomba:** Catat nama lomba/event, tanggal, lokasi gantangan, nomor gantangan, kelas tiket, dan burung yang ditandingkan.
+- **Hasil & Prestasi:** Catat peringkat juara/podium (Juara 1, 2, 3, Masuk Nominasi), hadiah/kejuaraan yang diraih, dan catatan evaluasi juri.
+- **Statistik Prestasi:** Ringkasan total keikutsertaan lomba, total juara 1, dan total podium per burung atau peternakan.
+
+### 17. 🧬 Kalkulator Genetika & Mutasi Universal
+- **Hukum Genetika Mendel:** Kalkulator probabilitas persilangan genetik indukan jantan dan betina.
+- **Berbagai Jenis Mutasi:** Mendukung mutasi terikat kelamin (*Sex-Linked*), resesif (*Recessive*), dan dominan (*Dominant*).
+- **Prediksi Akurat:** Menghasilkan persentase prediksi anakan jantan dan betina (Visual vs Split/Carrier) beserta tips praktis untuk peternak.
+
+### 18. 📜 Sertifikat & Silsilah Digital (*Digital Pedigree*)
+- **Silsilah Resmi:** Pembuatan lembar silsilah burung digital lengkap dengan nomor ring, nama farm/breeder, tanggal menetas, nama indukan, dan catatan silsilah.
+- **Tampilan Sertifikat Elegan:** Desain sertifikat resmi dengan cap ornamen klasik.
+- **Bagikan Silsilah:** Tombol salin dan bagikan silsilah digital via WhatsApp, media sosial, atau catatan pembeli secara langsung.
+
 ---
 
 ## 🛠️ Arsitektur & Teknologi
@@ -158,6 +180,7 @@ Proyek ini dilengkapi dengan workflow GitHub Actions di `.github/workflows/build
 ### 3. Langkah Sinkronisasi ke Repositori GitHub Anda
 Jalankan perintah berikut di terminal lokal untuk menghubungkan dan mengunggah kode ke GitHub:
 ```bash
+git init
 git add .
 git commit -m "feat: release BzOne v1.0 with APK and GitHub Actions"
 git branch -M main

@@ -32,6 +32,7 @@ fun BirdDetailScreen(
     viewModel: BzOneViewModel,
     onNavigateBack: () -> Unit,
     onEditBird: (Long) -> Unit,
+    onNavigateToPedigree: ((Long) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val birds by viewModel.activeBirds.collectAsStateWithLifecycle()
@@ -161,6 +162,17 @@ fun BirdDetailScreen(
                                 onClick = {},
                                 label = { Text("Status: ${bird.status}") }
                             )
+                        }
+                        if (onNavigateToPedigree != null) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            FilledTonalButton(
+                                onClick = { onNavigateToPedigree(bird.id) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(Icons.Default.WorkspacePremium, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Cetak Sertifikat Silsilah (Pedigree)")
+                            }
                         }
                     }
                 }

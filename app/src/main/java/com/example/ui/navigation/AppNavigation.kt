@@ -35,9 +35,15 @@ import com.example.ui.screens.health.HealthFormScreen
 import com.example.ui.screens.health.HealthScreen
 import com.example.ui.screens.inventory.InventoryScreen
 import com.example.ui.screens.inventory.ItemFormScreen
+import com.example.ui.screens.competitions.CompetitionFormScreen
+import com.example.ui.screens.competitions.CompetitionsScreen
+import com.example.ui.screens.genetics.GeneticsCalculatorScreen
+import com.example.ui.screens.masteran.MasteranFormScreen
+import com.example.ui.screens.masteran.MasteranScreen
 import com.example.ui.screens.more.MoreScreen
 import com.example.ui.screens.notes.NoteFormScreen
 import com.example.ui.screens.notes.NotesScreen
+import com.example.ui.screens.pedigree.PedigreeCertificateScreen
 import com.example.ui.screens.reminders.ReminderFormScreen
 import com.example.ui.screens.reminders.RemindersScreen
 import com.example.ui.screens.reports.ReportsScreen
@@ -136,7 +142,10 @@ fun BzOneApp(viewModel: BzOneViewModel) {
                     onAddBird = { navController.navigate("bird_form?birdId=0") },
                     onAddCare = { navController.navigate("care_form?recordId=0") },
                     onAddBreeding = { navController.navigate("breeding_pair_form?pairId=0") },
-                    onAddTransaction = { navController.navigate("finance_form?txId=0") }
+                    onAddTransaction = { navController.navigate("finance_form?txId=0") },
+                    onNavigateToMasteran = { navController.navigate("masteran") },
+                    onNavigateToCompetitions = { navController.navigate("competitions") },
+                    onNavigateToGenetics = { navController.navigate("genetics") }
                 )
             }
 
@@ -159,7 +168,8 @@ fun BzOneApp(viewModel: BzOneViewModel) {
                     birdId = birdId,
                     viewModel = viewModel,
                     onNavigateBack = { navController.popBackStack() },
-                    onEditBird = { id -> navController.navigate("bird_form?birdId=$id") }
+                    onEditBird = { id -> navController.navigate("bird_form?birdId=$id") },
+                    onNavigateToPedigree = { id -> navController.navigate("pedigree?birdId=$id") }
                 )
             }
 
@@ -444,6 +454,77 @@ fun BzOneApp(viewModel: BzOneViewModel) {
             // Pengaturan
             composable("settings") {
                 SettingsScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            // Audio Masteran Burung
+            composable("masteran") {
+                MasteranScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToForm = { id -> navController.navigate("masteran_form?masteranId=$id") }
+                )
+            }
+
+            composable(
+                route = "masteran_form?masteranId={masteranId}",
+                arguments = listOf(navArgument("masteranId") {
+                    type = NavType.LongType
+                    defaultValue = 0L
+                })
+            ) { backStackEntry ->
+                val masteranId = backStackEntry.arguments?.getLong("masteranId") ?: 0L
+                MasteranFormScreen(
+                    masteranId = masteranId,
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            // Prestasi Lomba & Riwayat Gantangan
+            composable("competitions") {
+                CompetitionsScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToForm = { id -> navController.navigate("competition_form?recordId=$id") }
+                )
+            }
+
+            composable(
+                route = "competition_form?recordId={recordId}",
+                arguments = listOf(navArgument("recordId") {
+                    type = NavType.LongType
+                    defaultValue = 0L
+                })
+            ) { backStackEntry ->
+                val recordId = backStackEntry.arguments?.getLong("recordId") ?: 0L
+                CompetitionFormScreen(
+                    recordId = recordId,
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            // Kalkulator Genetika
+            composable("genetics") {
+                GeneticsCalculatorScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            // Sertifikat Silsilah (Pedigree)
+            composable(
+                route = "pedigree?birdId={birdId}",
+                arguments = listOf(navArgument("birdId") {
+                    type = NavType.LongType
+                    defaultValue = 0L
+                })
+            ) { backStackEntry ->
+                val birdId = backStackEntry.arguments?.getLong("birdId") ?: 0L
+                PedigreeCertificateScreen(
+                    initialBirdId = birdId,
                     viewModel = viewModel,
                     onNavigateBack = { navController.popBackStack() }
                 )

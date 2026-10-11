@@ -1,6 +1,9 @@
 package com.example.viewmodel
 
 import android.app.Application
+import android.content.Context
+import android.media.MediaPlayer
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -9,6 +12,8 @@ import com.example.data.local.BzOneDatabase
 import com.example.data.local.dao.SpeciesCountTuple
 import com.example.data.local.entities.*
 import com.example.data.repository.BzOneRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -874,4 +879,262 @@ class BzOneViewModel(application: Application) : AndroidViewModel(application) {
             onComplete()
         }
     }
+
+    // ==========================================
+    // MASTERAN AUDIO & PLAYER
+    // ==========================================
+    val masteranList: StateFlow<List<MasteranAudioEntity>> = repository.activeMasteranAudio
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val favoriteMasteranList: StateFlow<List<MasteranAudioEntity>> = repository.favoriteMasteranAudio
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val selectedMasteranCategory = MutableStateFlow<String?>(null)
+
+    val filteredMasteranList: StateFlow<List<MasteranAudioEntity>> = combine(
+        masteranList,
+        selectedMasteranCategory
+    ) { list, cat ->
+        if (cat.isNullOrBlank()) list else list.filter { it.category.equals(cat, ignoreCase = true) }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Audio Playback State
+    private var mediaPlayer: MediaPlayer? = null
+    private var progressUpdateJob: Job? = null
+    private var sleepTimerJob: Job? = null
+
+    val currentlyPlayingAudio = MutableStateFlow<MasteranAudioEntity?>(null)
+    val isAudioPlaying = MutableStateFlow(false)
+    val audioProgressMs = MutableStateFlow(0)
+    val audioDurationMs = MutableStateFlow(0)
+    val isAudioLooping = MutableStateFlow(true)
+    val sleepTimerMinutes = MutableStateFlow(0) // 0 = off
+
+    fun playMasteran(masteran: MasteranAudioEntity, context: Context) {
+        viewModelScope.launch {
+            try {
+                if (currentlyPlayingAudio.value?.id == masteran.id && mediaPlayer != null) {
+                    if (isAudioPlaying.value) {
+                        mediaPlayer?.pause()
+                        isAudioPlaying.value = false
+                    } else {
+                        mediaPlayer?.start()
+                        isAudioPlaying.value = true
+                        startProgressUpdates()
+                    }
+                    return@launch
+                }
+
+                // Stop previous
+                stopAudio()
+
+                if (masteran.sourceType == "Lokal") {
+                    val uri = Uri.parse(masteran.sourceUri)
+                    mediaPlayer = MediaPlayer().apply {
+                        setDataSource(context, uri)
+                        isLooping = isAudioLooping.value
+                        setOnPreparedListener { mp ->
+                            mp.start()
+                            isAudioPlaying.value = true
+                            currentlyPlayingAudio.value = masteran
+                            audioDurationMs.value = mp.duration
+                            startProgressUpdates()
+                        }
+                        setOnCompletionListener {
+                            if (!isAudioLooping.value) {
+                                isAudioPlaying.value = false
+                                audioProgressMs.value = 0
+                            }
+                        }
+                        setOnErrorListener { _, _, _ ->
+                            showMessage("Gagal memutar file audio lokal")
+                            isAudioPlaying.value = false
+                            true
+                        }
+                        prepareAsync()
+                    }
+                    repository.incrementMasteranPlayCount(masteran.id)
+                } else {
+                    // YouTube / Web Link: jika link audio langsung http, putar via MediaPlayer, jika link YouTube umum
+                    val uriStr = masteran.sourceUri.trim()
+                    if (uriStr.endsWith(".mp3", ignoreCase = true) || uriStr.endsWith(".m4a", ignoreCase = true) || uriStr.endsWith(".ogg", ignoreCase = true)) {
+                        mediaPlayer = MediaPlayer().apply {
+                            setDataSource(uriStr)
+                            isLooping = isAudioLooping.value
+                            setOnPreparedListener { mp ->
+                                mp.start()
+                                isAudioPlaying.value = true
+                                currentlyPlayingAudio.value = masteran
+                                audioDurationMs.value = mp.duration
+                                startProgressUpdates()
+                            }
+                            setOnCompletionListener {
+                                if (!isAudioLooping.value) {
+                                    isAudioPlaying.value = false
+                                    audioProgressMs.value = 0
+                                }
+                            }
+                            setOnErrorListener { _, _, _ ->
+                                showMessage("Gagal memutar stream audio web")
+                                isAudioPlaying.value = false
+                                true
+                            }
+                            prepareAsync()
+                        }
+                    } else {
+                        // Mark as active playing entity for YouTube player card
+                        currentlyPlayingAudio.value = masteran
+                        isAudioPlaying.value = true
+                    }
+                    repository.incrementMasteranPlayCount(masteran.id)
+                }
+            } catch (e: Exception) {
+                showMessage("Gagal memutar audio: ${e.localizedMessage}")
+                isAudioPlaying.value = false
+            }
+        }
+    }
+
+    private fun startProgressUpdates() {
+        progressUpdateJob?.cancel()
+        progressUpdateJob = viewModelScope.launch {
+            while (isAudioPlaying.value) {
+                mediaPlayer?.let { mp ->
+                    if (mp.isPlaying) {
+                        audioProgressMs.value = mp.currentPosition
+                        audioDurationMs.value = mp.duration
+                    }
+                }
+                delay(500)
+            }
+        }
+    }
+
+    fun pauseAudio() {
+        mediaPlayer?.let {
+            if (it.isPlaying) {
+                it.pause()
+            }
+        }
+        isAudioPlaying.value = false
+    }
+
+    fun resumeAudio() {
+        mediaPlayer?.let {
+            it.start()
+            isAudioPlaying.value = true
+            startProgressUpdates()
+        } ?: run {
+            if (currentlyPlayingAudio.value != null) {
+                isAudioPlaying.value = true
+            }
+        }
+    }
+
+    fun stopAudio() {
+        progressUpdateJob?.cancel()
+        try {
+            mediaPlayer?.stop()
+            mediaPlayer?.release()
+        } catch (_: Exception) {}
+        mediaPlayer = null
+        isAudioPlaying.value = false
+        audioProgressMs.value = 0
+        audioDurationMs.value = 0
+    }
+
+    fun seekAudio(positionMs: Int) {
+        mediaPlayer?.seekTo(positionMs)
+        audioProgressMs.value = positionMs
+    }
+
+    fun toggleAudioLoop() {
+        val newLoop = !isAudioLooping.value
+        isAudioLooping.value = newLoop
+        mediaPlayer?.isLooping = newLoop
+    }
+
+    fun setSleepTimer(minutes: Int) {
+        sleepTimerMinutes.value = minutes
+        sleepTimerJob?.cancel()
+        if (minutes > 0) {
+            sleepTimerJob = viewModelScope.launch {
+                delay(minutes * 60 * 1000L)
+                stopAudio()
+                sleepTimerMinutes.value = 0
+                showMessage("Timer selesai: Pemasteran dimatikan otomatis")
+            }
+            showMessage("Timer pemasteran diatur: $minutes Menit")
+        } else {
+            showMessage("Timer pemasteran dimatikan")
+        }
+    }
+
+    suspend fun getMasteranById(id: Long): MasteranAudioEntity? = repository.getMasteranById(id)
+
+    fun saveMasteran(masteran: MasteranAudioEntity, onComplete: () -> Unit = {}) {
+        viewModelScope.launch {
+            val isNew = masteran.id == 0L
+            repository.saveMasteran(masteran)
+            showMessage(if (isNew) "Masteran berhasil ditambahkan" else "Masteran berhasil diperbarui")
+            onComplete()
+        }
+    }
+
+    fun toggleMasteranFavorite(masteran: MasteranAudioEntity) {
+        viewModelScope.launch {
+            val newFav = !masteran.isFavorite
+            repository.toggleMasteranFavorite(masteran.id, newFav)
+            showMessage(if (newFav) "Ditambahkan ke favorit" else "Dihapus dari favorit")
+        }
+    }
+
+    fun deleteMasteran(id: Long) {
+        viewModelScope.launch {
+            if (currentlyPlayingAudio.value?.id == id) {
+                stopAudio()
+                currentlyPlayingAudio.value = null
+            }
+            repository.deleteMasteran(id)
+            showMessage("Audio masteran berhasil dihapus")
+        }
+    }
+
+    // ==========================================
+    // PRESTASI LOMBA & GANTANGAN (COMPETITION)
+    // ==========================================
+    val competitionRecords: StateFlow<List<CompetitionRecordEntity>> = repository.activeCompetitionRecords
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val totalCompetitions: StateFlow<Int> = repository.activeCompetitionCount
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    val firstRankCount: StateFlow<Int> = repository.firstRankCompetitionCount
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    fun getCompetitionsForBird(birdId: Long): Flow<List<CompetitionRecordEntity>> = repository.getCompetitionsForBird(birdId)
+
+    suspend fun getCompetitionById(id: Long): CompetitionRecordEntity? = repository.getCompetitionById(id)
+
+    fun saveCompetition(record: CompetitionRecordEntity, onComplete: () -> Unit = {}) {
+        viewModelScope.launch {
+            val isNew = record.id == 0L
+            repository.saveCompetition(record)
+            showMessage(if (isNew) "Prestasi lomba berhasil dicatat" else "Prestasi lomba berhasil diperbarui")
+            onComplete()
+        }
+    }
+
+    fun deleteCompetition(id: Long) {
+        viewModelScope.launch {
+            repository.deleteCompetition(id)
+            showMessage("Data prestasi lomba berhasil dihapus")
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopAudio()
+    }
 }
+

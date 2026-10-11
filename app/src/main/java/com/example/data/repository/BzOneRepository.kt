@@ -29,6 +29,8 @@ class BzOneRepository(private val database: BzOneDatabase) {
     private val transactionDao = database.transactionDao()
     private val reminderDao = database.reminderDao()
     private val noteDao = database.noteDao()
+    private val masteranAudioDao = database.masteranAudioDao()
+    private val competitionRecordDao = database.competitionRecordDao()
 
     // BIRDS
     val activeBirds: Flow<List<BirdEntity>> = birdDao.getAllActive()
@@ -528,4 +530,63 @@ class BzOneRepository(private val database: BzOneDatabase) {
     suspend fun clearAllData(): Unit = withContext(Dispatchers.IO) {
         database.clearAllTables()
     }
+
+    // MASTERAN AUDIO
+    val activeMasteranAudio: Flow<List<MasteranAudioEntity>> = masteranAudioDao.getAllActive()
+    val favoriteMasteranAudio: Flow<List<MasteranAudioEntity>> = masteranAudioDao.getFavorites()
+    val activeMasteranCount: Flow<Int> = masteranAudioDao.getActiveCount()
+
+    suspend fun getMasteranById(id: Long): MasteranAudioEntity? = masteranAudioDao.getById(id)
+
+    suspend fun saveMasteran(masteran: MasteranAudioEntity): Long = withContext(Dispatchers.IO) {
+        if (masteran.id == 0L) {
+            masteranAudioDao.insert(masteran)
+        } else {
+            masteranAudioDao.update(masteran)
+            masteran.id
+        }
+    }
+
+    suspend fun toggleMasteranFavorite(id: Long, isFavorite: Boolean) = withContext(Dispatchers.IO) {
+        masteranAudioDao.toggleFavorite(id, isFavorite)
+    }
+
+    suspend fun incrementMasteranPlayCount(id: Long) = withContext(Dispatchers.IO) {
+        masteranAudioDao.incrementPlayCount(id)
+    }
+
+    suspend fun deleteMasteran(id: Long) = withContext(Dispatchers.IO) {
+        masteranAudioDao.deletePermanently(id)
+    }
+
+    suspend fun archiveMasteran(id: Long) = withContext(Dispatchers.IO) {
+        masteranAudioDao.archive(id)
+    }
+
+    // COMPETITION RECORDS
+    val activeCompetitionRecords: Flow<List<CompetitionRecordEntity>> = competitionRecordDao.getAllActive()
+    val activeCompetitionCount: Flow<Int> = competitionRecordDao.getActiveCount()
+    val firstRankCompetitionCount: Flow<Int> = competitionRecordDao.getFirstRankCount()
+
+    fun getCompetitionsForBird(birdId: Long): Flow<List<CompetitionRecordEntity>> = competitionRecordDao.getByBirdId(birdId)
+
+    suspend fun getCompetitionById(id: Long): CompetitionRecordEntity? = competitionRecordDao.getById(id)
+
+    suspend fun saveCompetition(record: CompetitionRecordEntity): Long = withContext(Dispatchers.IO) {
+        if (record.id == 0L) {
+            competitionRecordDao.insert(record)
+        } else {
+            competitionRecordDao.update(record)
+            record.id
+        }
+    }
+
+    suspend fun deleteCompetition(id: Long) = withContext(Dispatchers.IO) {
+        competitionRecordDao.deletePermanently(id)
+    }
+
+    suspend fun archiveCompetition(id: Long) = withContext(Dispatchers.IO) {
+        competitionRecordDao.archive(id)
+    }
 }
+

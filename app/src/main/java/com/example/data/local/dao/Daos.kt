@@ -551,3 +551,67 @@ interface NoteDao {
     @Query("DELETE FROM notes WHERE id = :id")
     suspend fun deletePermanently(id: Long)
 }
+
+@Dao
+interface MasteranAudioDao {
+    @Query("SELECT * FROM masteran_audio WHERE isArchived = 0 ORDER BY isFavorite DESC, createdAt DESC")
+    fun getAllActive(): Flow<List<MasteranAudioEntity>>
+
+    @Query("SELECT * FROM masteran_audio WHERE isArchived = 0 AND isFavorite = 1 ORDER BY createdAt DESC")
+    fun getFavorites(): Flow<List<MasteranAudioEntity>>
+
+    @Query("SELECT * FROM masteran_audio WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): MasteranAudioEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(entity: MasteranAudioEntity): Long
+
+    @Update
+    suspend fun update(entity: MasteranAudioEntity)
+
+    @Query("UPDATE masteran_audio SET isFavorite = :isFavorite WHERE id = :id")
+    suspend fun toggleFavorite(id: Long, isFavorite: Boolean)
+
+    @Query("UPDATE masteran_audio SET playCount = playCount + 1 WHERE id = :id")
+    suspend fun incrementPlayCount(id: Long)
+
+    @Query("UPDATE masteran_audio SET isArchived = 1 WHERE id = :id")
+    suspend fun archive(id: Long)
+
+    @Query("DELETE FROM masteran_audio WHERE id = :id")
+    suspend fun deletePermanently(id: Long)
+
+    @Query("SELECT COUNT(*) FROM masteran_audio WHERE isArchived = 0")
+    fun getActiveCount(): Flow<Int>
+}
+
+@Dao
+interface CompetitionRecordDao {
+    @Query("SELECT * FROM competition_records WHERE isArchived = 0 ORDER BY date DESC")
+    fun getAllActive(): Flow<List<CompetitionRecordEntity>>
+
+    @Query("SELECT * FROM competition_records WHERE birdId = :birdId AND isArchived = 0 ORDER BY date DESC")
+    fun getByBirdId(birdId: Long): Flow<List<CompetitionRecordEntity>>
+
+    @Query("SELECT * FROM competition_records WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): CompetitionRecordEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(entity: CompetitionRecordEntity): Long
+
+    @Update
+    suspend fun update(entity: CompetitionRecordEntity)
+
+    @Query("UPDATE competition_records SET isArchived = 1 WHERE id = :id")
+    suspend fun archive(id: Long)
+
+    @Query("DELETE FROM competition_records WHERE id = :id")
+    suspend fun deletePermanently(id: Long)
+
+    @Query("SELECT COUNT(*) FROM competition_records WHERE isArchived = 0")
+    fun getActiveCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM competition_records WHERE isArchived = 0 AND rank = 'Juara 1'")
+    fun getFirstRankCount(): Flow<Int>
+}
+

@@ -38,6 +38,38 @@ fun MoreScreen(
 ) {
     val menuItems = listOf(
         MoreMenuItem(
+            title = "Audio Masteran Burung",
+            subtitle = "Pemutar masteran cerdas dari YouTube & file lokal HP dengan timer",
+            icon = Icons.Default.MusicNote,
+            iconColor = Color(0xFF00897B),
+            route = "masteran",
+            testTag = "menu_masteran"
+        ),
+        MoreMenuItem(
+            title = "Prestasi Lomba & Gantangan",
+            subtitle = "Catatan piala, piagam, juara gantangan, nomor tiket, & evaluasi juri",
+            icon = Icons.Default.EmojiEvents,
+            iconColor = Color(0xFFF57F17),
+            route = "competitions",
+            testTag = "menu_competitions"
+        ),
+        MoreMenuItem(
+            title = "Kalkulator Genetika",
+            subtitle = "Prediksi persilangan mutasi warna anakan (Hukum Mendel universal)",
+            icon = Icons.Default.Biotech,
+            iconColor = Color(0xFF5E35B1),
+            route = "genetics",
+            testTag = "menu_genetics"
+        ),
+        MoreMenuItem(
+            title = "Sertifikat Silsilah (Pedigree)",
+            subtitle = "Cetak dan bagikan sertifikat resmi garis keturunan indukan",
+            icon = Icons.Default.WorkspacePremium,
+            iconColor = Color(0xFF2E7D32),
+            route = "pedigree?birdId=0",
+            testTag = "menu_pedigree"
+        ),
+        MoreMenuItem(
             title = "Kandang Burung",
             subtitle = "Manajemen kandang, kapasitas, dan lokasi",
             icon = Icons.Default.HomeWork,

@@ -50,3 +50,8 @@ object Formatters {
         }
     }
 }
+
+object DateUtils {
+    fun formatDate(timestamp: Long?): String = Formatters.formatDate(timestamp)
+    fun formatDateTime(timestamp: Long?): String = Formatters.formatDateTime(timestamp)
+}
